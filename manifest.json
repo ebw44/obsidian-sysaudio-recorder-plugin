@@ -1,7 +1,7 @@
 {
   "id": "obsidian-sysaudio-recorder",
   "name": "Audio Recorder",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "minAppVersion": "0.15.0",
   "description": "Record system audio and microphone with an always-on-top control window. Perfect for capturing meetings, calls, and lectures.",
   "author": "codyklr",

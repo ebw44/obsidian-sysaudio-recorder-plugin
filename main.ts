@@ -19,6 +19,8 @@ interface AudioRecorderSettings {
   selectedMicrophoneId: string;
   muteHotkey: string; // Global hotkey for mute toggle
   outputFormat: "webm" | "wav";
+  controlWindowWidth: number;
+  controlWindowHeight: number;
 }
 
 const DEFAULT_SETTINGS: AudioRecorderSettings = {
@@ -27,6 +29,8 @@ const DEFAULT_SETTINGS: AudioRecorderSettings = {
   selectedMicrophoneId: "default",
   muteHotkey: "CommandOrControl+Shift+M", // Default global hotkey
   outputFormat: "webm",
+  controlWindowWidth: 320,
+  controlWindowHeight: 55
 };
 
 export default class AudioRecorderPlugin extends Plugin {
@@ -309,10 +313,12 @@ export default class AudioRecorderPlugin extends Plugin {
 
     // Calculate position (bottom center)
     const { width, height } = remote.screen.getPrimaryDisplay().workAreaSize;
+    const controlWidth = Number.isFinite(this.settings.controlWindowWidth) ? this.settings.controlWindowWidth : 320;
+    const controlHeight = Number.isFinite(this.settings.controlWindowHeight) ? this.settings.controlWindowHeight : 110;
 
     this.controlWindow = new BrowserWindow({
-      width: 320,
-      height: 110,
+      width: controlWidth,
+      height: controlHeight,
       frame: false,
       transparent: true,
       backgroundColor: "#00000000", // Force transparency
@@ -324,8 +330,8 @@ export default class AudioRecorderPlugin extends Plugin {
         contextIsolation: false,
         backgroundThrottling: false, // Prevent throttling when in background
       },
-      x: Math.floor(width / 2 - 160),
-      y: height - 110,
+      x: Math.floor(width / 2 - controlWidth / 2),
+      y: height - controlHeight,
     });
 
     // Load HTML
@@ -724,6 +730,38 @@ class AudioRecorderSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           });
       });
+
+    new Setting(containerEl)
+      .setName("Control Window Width")
+      .setDesc("Width of the recording control overlay window in pixels.")
+      .addText((text) =>
+        text
+          .setPlaceholder("320")
+          .setValue(String(this.plugin.settings.controlWindowWidth))
+          .onChange(async (value) => {
+            const width = parseInt(value, 10);
+            if (!Number.isNaN(width) && width > 0) {
+              this.plugin.settings.controlWindowWidth = width;
+              await this.plugin.saveSettings();
+            }
+          })
+      );
+
+    new Setting(containerEl)
+      .setName("Control Window Height")
+      .setDesc("Height of the recording control overlay window in pixels.")
+      .addText((text) =>
+        text
+          .setPlaceholder("110")
+          .setValue(String(this.plugin.settings.controlWindowHeight))
+          .onChange(async (value) => {
+            const height = parseInt(value, 10);
+            if (!Number.isNaN(height) && height > 0) {
+            this.plugin.settings.controlWindowHeight = height;
+              await this.plugin.saveSettings();
+            }
+          })
+      );
 
     // Hotkeys Section
     containerEl.createEl("h3", { text: "Hotkeys" });
